@@ -1,4 +1,4 @@
-const apiUrl = "http://localhost:8080"
+const apiUrl = "http://localhost:8080/students"
 
 onInitPage()
 
@@ -39,30 +39,117 @@ function renderStudentRow(student) {
 }
 
 function createStudent() {
+  var modalID = "addModal"
+  var title = "Create student";
+  var student = null;
+  var actionType = "add";
+  var body = renderForm(student, actionType);
+  var actionConfirm = "Submit";
+
+  action(modalID, title, body, actionConfirm);
   console.log("created");
 }
 
 function viewStudent(id) {
+  var modalID = "viewModal"
   var title = "view student";
-  var body = "student detail";
-  renderModal(title, body);
-  var viewModal = new bootstrap.Modal(document.getElementById('viewModal'));;
-  viewModal.toggle();
-  console.log("viewed", id);
+  var actionType = "view";
+  var actionConfirm = "OK";
+  fetchData(apiUrl + "/" + id)
+    .then(student => {
+      var body = renderForm(student, actionType);
+      action(modalID, title, body, actionConfirm);
+    })
+    
+  console.log("student detail", id);
 }
 
 function updateStudent(id) {
+  var modalID = "updateModal"
+  var title = "update student";
+  var body = "student update form";
+  var actionConfirm = "Update";
+
+  action(modalID, title, body, actionConfirm);
   console.log("updated", id);
 }
 
 function deleteStudent(id) {
+  var modalID = "deleteModal"
+  var title = "delete student";
+  var body = "Delete this student?";
+  var actionConfirm = "Delete";
+
+  action(modalID, title, body, actionConfirm);
   console.log("deleted", id);
 }
 
-function renderModal(title, body) {
-  customModal = document.getElementById("customModal");
+function renderForm(student, actionType) {
+  var data = {};
+  var actions = ["add", "view", "update"]
+  if (actions.includes(actionType) ) {
+    data = {
+      idField: {
+        placeHolder: "Enter Student ID",
+        value: student ? student.id : ""
+      },
+      nameField: {
+        placeHolder: "Enter Student Name",
+        value: student ? student.name : ""
+      },
+      ageField: {
+        placeHolder: "Enter Student Age",
+        value: student ? student.age : ""
+      }
+    }
+  }
+  var body = `
+  <form id="student-modal-form">
+    <div class="mb-3 mt-3">
+      <label for="id" class="form-label">ID:</label>
+      <input type="text" class="form-control" id="id" 
+        placeholder="${data.idField.placeHolder}" 
+        value="${data.idField.value}" name="id" 
+        ${actionType === "view" ? "readonly" : ""}
+      >
+    </div>
+    <div class="mb-3">
+      <label for="name" class="form-label">Name:</label>
+      <input type="text" class="form-control" id="name" 
+        placeholder="${data.nameField.placeHolder}" 
+        value="${data.nameField.value}" name="name" 
+        ${actionType === "view" ? "readonly" : ""}
+      >
+    </div>
+    <div class="mb-3">
+      <label for="age" class="form-label">Age:</label>
+      <input type="text" class="form-control" id="age" 
+        placeholder="${data.ageField.placeHolder}" 
+        value="${data.ageField.value}" name="age" 
+        ${actionType === "view" ? "readonly" : ""}
+      >
+    </div>
+  </form> 
+  `;
+  return body
+}
+
+function action(modalID, title, body, actionConfirm) {
+  renderModal(modalID, title, body, actionConfirm);
+  toggleModal(modalID);
+}
+
+function renderModal(modalID, title, body, actionConfirm) {
+  var customModal = document.getElementById("customModal");
+  var confirmButtonClass = {
+    "Submit": "btn-primary",
+    "OK": "btn-primary",
+    "Update": "btn-success",
+    "Delete": "btn-danger",
+  };
+
   customModal.innerHTML = `
-  <div class="modal" id="viewModal" tabindex="-1">
+  <div class="modal" id="${modalID}" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -74,10 +161,16 @@ function renderModal(title, body) {
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn ${confirmButtonClass[actionConfirm]}">${actionConfirm}</button>
           </div>
         </div>
       </div>
     </div>
   `
+}
+
+function toggleModal(modalID) {
+  var modal = new bootstrap.Modal(document.getElementById(modalID));;
+  modal.toggle();
+  console.log("toggled", id);
 }

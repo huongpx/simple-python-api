@@ -23,8 +23,16 @@ class CustomHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_response()
-        self.wfile.write(json.dumps(data).encode('utf-8'))
-
+        path = self.path
+        student_id = path.strip().split('/')[-1]
+        if student_id.isdigit():
+            student_id = int(student_id)
+            student = list(filter(lambda student: student["id"] == student_id, data))[0]
+            self.wfile.write(json.dumps(student).encode('utf-8'))
+        else:
+            students = data
+            self.wfile.write(json.dumps(students).encode('utf-8'))
+            
     # def do_POST(self):
     #     content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
     #     post_data = self.rfile.read(content_length) # <--- Gets the data itself
