@@ -1,4 +1,4 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler, HTTPServer
 import json
 
 data = [
@@ -14,12 +14,17 @@ data = [
     },
 ]
 
-class CustomHandler(BaseHTTPRequestHandler):
+class CustomHandler(SimpleHTTPRequestHandler):
     def _set_response(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', '*')
+        self.send_header('Access-Control-Allow-Headers', '*')
         self.end_headers()
+        
+    def do_OPTIONS(self):
+        self._set_response()
 
     def do_GET(self):
         self._set_response()
@@ -33,12 +38,22 @@ class CustomHandler(BaseHTTPRequestHandler):
             students = data
             self.wfile.write(json.dumps(students).encode('utf-8'))
             
-    # def do_POST(self):
-    #     content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-    #     post_data = self.rfile.read(content_length) # <--- Gets the data itself
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        # print(post_data)
+        new_student = json.loads(post_data)
+        new_student["id"] = int(new_student["id"])
+        data.append(new_student)
 
-        # self._set_response()
-        # self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
+        self._set_response()
+        self.wfile.write(json.dumps({"message": "Successful create student"}).encode('utf-8'))
+        
+    def do_PUT(self):
+        pass
+    
+    def do_DELETE(self):
+        pass
 
 def run(server_class=HTTPServer, handler_class=CustomHandler, port=8080):
     server_address = ('', port)

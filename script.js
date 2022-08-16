@@ -3,12 +3,22 @@ const apiUrl = "http://localhost:8080/students"
 onInitPage()
 
 function onInitPage() {
-  var data = fetchData(apiUrl);
+  var data = request(apiUrl, "GET");
   renderStudentRows(data);
 }
 
-function fetchData(url) {
-  return fetch(url).then(response => response.json());
+function request(url, method, data = {}) {
+  var initRequest = {
+    method: method,
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  }
+  if (method !== "GET") {
+    initRequest["body"] = JSON.stringify(data);
+  }
+  return fetch(url, initRequest).then(response => response.json());
 }
 
 function renderStudentRows(data) {
@@ -55,12 +65,12 @@ function viewStudent(id) {
   var title = "view student";
   var actionType = "view";
   var actionConfirm = "OK";
-  fetchData(apiUrl + "/" + id)
+  request(apiUrl + "/" + id, "GET")
     .then(student => {
       var body = renderForm(student, actionType);
       action(modalID, title, body, actionConfirm);
     })
-    
+
   console.log("student detail", id);
 }
 
@@ -140,8 +150,8 @@ function action(modalID, title, body, actionConfirm) {
 }
 
 function renderModal(modalID, title, body, actionConfirm) {
-  var customModal = document.getElementById("customModal");
-  var confirmButtonClass = {
+  const customModal = document.getElementById("customModal");
+  const confirmButtonClass = {
     "Submit": "btn-primary",
     "OK": "btn-primary",
     "Update": "btn-success",
@@ -161,7 +171,7 @@ function renderModal(modalID, title, body, actionConfirm) {
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn ${confirmButtonClass[actionConfirm]}">${actionConfirm}</button>
+            <button type="button" class="btn ${confirmButtonClass[actionConfirm]}" onclick="handleSubmit()">${actionConfirm}</button>
           </div>
         </div>
       </div>
@@ -170,7 +180,22 @@ function renderModal(modalID, title, body, actionConfirm) {
 }
 
 function toggleModal(modalID) {
-  var modal = new bootstrap.Modal(document.getElementById(modalID));;
+  const modal = new bootstrap.Modal(document.getElementById(modalID));
   modal.toggle();
-  console.log("toggled", id);
+  console.log("toggled", modalID);
+}
+
+function handleSubmit() {
+  const form = document.getElementById("student-modal-form");
+  const id = form.elements["id"].value;
+  const name = form.elements["name"].value;
+  const age = form.elements["age"].value;
+  const data = {
+    id: id,
+    name: name,
+    age: age
+  };
+  request(apiUrl, "POST", data).then(() => {
+    location.reload()
+  })
 }
