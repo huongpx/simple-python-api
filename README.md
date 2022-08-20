@@ -7,4 +7,4 @@ Open 2 separate terminal tab, in each tab run:
  - python serve_static_files.py
 
 Open http://localhost:8000 in your browser, interact with the app.
-![image](https://user-images.githubusercontent.com/91840958/185740905-84d2a883-8a4f-4b0b-b958-ec3a9d7585e9.png)
+![image](https://user-images.githubusercontent.com/91840958/185740993-bf069abf-e13d-4e73-a7a4-5227b73c10eb.png)
